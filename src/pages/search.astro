@@ -1,0 +1,109 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Search from '../components/Search.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Search - ${SITE_TITLE}`} description="Search through all posts and content on the site." />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<div class="hero-content">
+					<h1>Search Everything</h1>
+					<p class="hero-description">
+						Discover content across the entire site. Search through posts, pages, and more with instant results.
+					</p>
+				</div>
+			</section>
+			<section class="search-section">
+				<Search />
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	main {
+		width: 800px;
+		max-width: calc(100% - 2em);
+		margin: auto;
+		padding: 2em 1em;
+	}
+	
+	.hero {
+		text-align: center;
+		padding: 3rem 0;
+	}
+	
+	.hero-content {
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	.hero h1 {
+		font-size: 3.052rem;
+		margin: 0 0 1.25rem 0;
+		color: black;
+		line-height: 1.2;
+		font-weight: 800;
+	}
+	
+	.hero-description {
+		font-size: 1.125rem;
+		color: rgb(var(--gray-dark));
+		line-height: 1.7;
+		max-width: 500px;
+		margin: 0 auto;
+		opacity: 0.85;
+		font-weight: 400;
+	}
+	
+	.search-section {
+		position: relative;
+	}
+
+	@media (max-width: 768px) {
+		main {
+			width: 100%;
+			padding: 1.5em 1em;
+		}
+		
+		.hero {
+			padding: 2rem 0;
+		}
+		
+		.hero h1 {
+			font-size: 2.441rem;
+		}
+		
+		.hero-description {
+			font-size: 1rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		main {
+			padding: 1em 0.75em;
+		}
+		
+		.hero {
+			padding: 1.5rem 0;
+		}
+		
+		.hero h1 {
+			font-size: 2.074rem;
+		}
+		
+		.hero-description {
+			font-size: 0.95rem;
+		}
+	}
+</style>

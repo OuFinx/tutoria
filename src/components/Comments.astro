@@ -1,0 +1,99 @@
+---
+// Giscus Comments Component
+// You'll need to configure these values based on your GitHub repository
+interface Props {
+  repo?: string;
+  repoId?: string;
+  category?: string;
+  categoryId?: string;
+}
+
+const {
+  repo = "your-username/your-repo", // Replace with your GitHub repo
+  repoId = "your-repo-id", // Replace with your repo ID
+  category = "Announcements", // Replace with your category
+  categoryId = "your-category-id" // Replace with your category ID
+} = Astro.props;
+---
+
+<div class="comments-section">
+  <h3>Comments</h3>
+  <div id="giscus-container">
+    <script 
+      src="https://giscus.app/client.js"
+      data-repo={repo}
+      data-repo-id={repoId}
+      data-category={category}
+      data-category-id={categoryId}
+      data-mapping="pathname"
+      data-strict="0"
+      data-reactions-enabled="1"
+      data-emit-metadata="0"
+      data-input-position="bottom"
+      data-theme="light"
+      data-lang="en"
+      crossorigin="anonymous"
+      async>
+    </script>
+  </div>
+</div>
+
+<style>
+  .comments-section {
+    width: 720px;
+    max-width: calc(100% - 2em);
+    margin: 0em auto;
+    padding: 2rem 1rem;
+    border-top: 1px dashed #e0e0e0;
+  }
+
+  .comments-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: rgb(var(--gray-dark));
+  }
+
+  #giscus-container {
+    min-height: 200px;
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .comments-section {
+      border-top: 1px dashed #333;
+    }
+    
+    .comments-section h3 {
+      color: rgb(var(--gray-light));
+    }
+  }
+</style>
+
+<script>
+  // Update Giscus theme on theme change (if you implement dark mode toggle)
+  document.addEventListener('DOMContentLoaded', () => {
+    const updateGiscusTheme = (theme: string) => {
+      const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+      if (iframe) {
+        iframe.contentWindow?.postMessage(
+          { giscus: { setConfig: { theme } } },
+          'https://giscus.app'
+        );
+      }
+    };
+
+    // Listen for theme changes if you implement a theme switcher
+    // You can uncomment and modify this if you add dark mode support
+    /*
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.classList.contains('dark');
+      updateGiscusTheme(isDark ? 'dark' : 'light');
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    */
+  });
+</script>

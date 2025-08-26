@@ -1,0 +1,67 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import mainCatGif from '../assets/global/main-cat.gif';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>👋 Welcome to my… blog?</h1>
+			<p>
+				Well, not exactly. I'd call it more of a collection of HowTo Tutorials.
+			</p>
+			<p>
+				I've always struggled to find guides that are both clear and practical-something with real examples + screenshots.<br><br>
+				Personally, I learn way faster when I see how things are done, instead of just reading walls of text 🤷‍♂️
+			</p>
+			<p>
+				So I thought myself: why not create the kind of tutorials I always wanted, and share them here?
+			</p>
+			<p>
+				I hope you find something useful (<i>good thing ChatGPT can't argue with my screenshot tutorials</i>😁)
+			</p>
+			<div class="cat-gif">
+				<img src={mainCatGif.src} alt="Pop cat gif" />
+			</div>
+			<div class="ps-block">
+				<p>
+					P.S. This blog is open-source!<br><br>
+					If you notice something that could be explained better, or you've got an idea for improvement, feel free to jump in. I'll happily review your Pull Request
+				</p>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.cat-gif {
+		text-align: center;
+		margin-top: 2rem;
+	}
+	
+	.cat-gif img {
+		max-width: 200px;
+		height: auto;
+		border-radius: 8px;
+	}
+	
+	.ps-block {
+		margin: 2rem 0;
+		padding: 0 0 0 1.5rem;
+		font-style: italic;
+		color: rgb(var(--gray-dark));
+		background: none;
+		border-style: dashed;
+		border-color: rgb(219, 219, 219);
+		text-align: center;
+	}
+</style>

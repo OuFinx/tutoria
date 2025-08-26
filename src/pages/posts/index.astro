@@ -1,0 +1,670 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+
+// Pagination settings
+const POSTS_PER_PAGE = 11;
+
+// For static generation, show all posts initially - pagination will be handled client-side
+const allPosts = (await getCollection('posts')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+// Calculate pagination
+const totalPosts = allPosts.length;
+const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+
+// Show all posts initially, pagination will be handled by JavaScript
+const posts = allPosts;
+
+// Get all unique tags with their counts and sort by count (descending)
+const tagCounts = {};
+allPosts.forEach(post => {
+	if (post.data.tags) {
+		post.data.tags.forEach(tag => {
+			tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+		});
+	}
+});
+
+const allTags = Object.entries(tagCounts)
+	.sort(([,a], [,b]) => b - a)
+	.map(([tag, count]) => ({ tag, count }));
+
+// Client-side pagination will be handled by JavaScript
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			.filter-section {
+				margin-bottom: 2rem;
+			}
+			.filter-title {
+				margin: 0 0 1rem 0;
+				color: rgb(var(--black));
+			}
+			.tags-filter {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+				margin-bottom: 1rem;
+				justify-content: center;
+				align-items: center;
+			}
+			.tag-filter {
+				color: rgb(var(--gray-dark));
+				text-decoration: none;
+				font-size: 0.85em;
+				cursor: pointer;
+				padding: 0.4rem 0.8rem;
+				border-radius: 20px;
+				border: 1px dashed rgb(200, 200, 200);
+				position: relative;
+				overflow: hidden;
+			}
+			.tag-filter::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				transition: left 0.5s;
+			}
+			.tag-filter:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+				border-color: rgb(var(--gray));
+			}
+			.tag-filter:hover::before {
+				left: 100%;
+			}
+			.tag-filter.active {
+				color: rgb(var(--gray-dark));
+				border-color: var(--accent);
+				font-weight: 500;
+			}
+
+			.tag-count {
+				display: inline-block;
+				background: rgb(246, 246, 246);
+				color: #828282;
+				border-radius: 50%;
+				width: 1.2em;
+				height: 1.2em;
+				font-weight: 500;
+				margin-left: 0.5rem;
+				text-align: center;
+				line-height: 1.2em;
+				vertical-align: text-bottom;
+			}
+			.posts-count {
+				margin: 0;
+				color: rgb(var(--gray));
+				font-size: 0.85em;
+			}
+			.tags-section {
+				margin-top: 4rem;
+				padding-top: 3rem;
+				border-top: 1px solid rgb(var(--gray-light));
+			}
+			.tags-spoiler {
+				text-align: center;
+				margin-top: 1rem;
+			}
+			.spoiler-toggle {
+				background: transparent;
+				color: rgb(var(--gray));
+				border: none;
+				padding: 0;
+				cursor: pointer;
+				font-size: 0.75em;
+				transition: all 0.2s ease;
+				text-decoration: underline;
+				text-decoration-style: dotted;
+				text-underline-offset: 2px;
+			}
+			.spoiler-toggle:hover {
+				color: rgb(var(--gray-dark));
+				text-decoration-color: rgb(var(--gray-dark));
+			}
+			.hidden-tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+				justify-content: center;
+				align-items: center;
+				margin-top: 1rem;
+			}
+			ul {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 2rem;
+				list-style-type: none;
+				margin: 0;
+				padding: 0;
+			}
+			ul li {
+				width: calc(50% - 1rem);
+			}
+			ul li * {
+				text-decoration: none;
+				transition: 0.2s ease;
+			}
+			ul li:first-child {
+				width: 100%;
+				margin-bottom: 1rem;
+				text-align: center;
+			}
+			ul li:first-child img {
+				width: 100%;
+			}
+			ul li:first-child .title {
+				font-size: 2.369rem;
+			}
+			ul li img {
+				margin-bottom: 0.5rem;
+				border-radius: 12px;
+			}
+			ul li a {
+				display: block;
+			}
+			.title {
+				margin: 0;
+				color: rgb(var(--black));
+				line-height: 1;
+			}
+			.date {
+				margin: 0;
+				color: rgb(var(--gray));
+			}
+			ul li a:hover h4,
+			ul li a:hover .date {
+				color: rgb(var(--gray));
+			}
+			ul a:hover img {
+				box-shadow: var(--box-shadow);
+			}
+			.post-tags {
+				margin-top: 0.5rem;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.25rem;
+			}
+			.post-tag {
+				background: rgb(var(--accent));
+				color: white;
+				padding: 0.2rem 0.5rem;
+				border-radius: 0.75rem;
+				font-size: 0.75rem;
+				text-decoration: none;
+			}
+			.placeholder-image {
+				margin-bottom: 0.5rem;
+				border-radius: 12px;
+				overflow: hidden;
+			}
+			.placeholder-image svg {
+				display: block;
+				width: 100%;
+				height: auto;
+			}
+			
+			/* Simple Clean Pagination */
+			.pagination-section {
+				margin: 3rem 0;
+				text-align: center;
+			}
+			
+			.pagination {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				gap: 8px;
+				margin-bottom: 1rem;
+			}
+			
+			.pagination-numbers {
+				display: flex;
+				gap: 8px;
+				align-items: center;
+			}
+			
+			/* All pagination links */
+			.pagination > a,
+			.pagination-numbers > a {
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				width: 40px !important;
+				height: 40px !important;
+				background: white !important;
+				border: 1px solid #ddd !important;
+				border-radius: 4px !important;
+				color: #333 !important;
+				text-decoration: none !important;
+				font-size: 14px !important;
+				font-weight: 500 !important;
+				transition: all 0.2s !important;
+				margin: 0 !important;
+				padding: 0 !important;
+				box-sizing: border-box !important;
+			}
+			
+			.pagination > a:hover,
+			.pagination-numbers > a:hover {
+				border-color: #999 !important;
+				background: #f5f5f5 !important;
+				color: #333 !important;
+			}
+			
+			.pagination > a.active,
+			.pagination-numbers > a.active {
+				background: white !important;
+				border-color: black !important;
+				color: black !important;
+			}
+			
+			.pagination-ellipsis {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 40px;
+				height: 40px;
+				color: #999;
+				font-size: 14px;
+			}
+			
+			.pagination-info {
+				color: #666;
+				font-size: 14px;
+			}
+			
+			/* Hide buttons when not needed */
+			.pagination-btn-hidden {
+				display: none !important;
+			}
+			
+			@media (max-width: 720px) {
+				ul {
+					gap: 0.5em;
+				}
+				ul li {
+					width: 100%;
+					text-align: center;
+				}
+				ul li:first-child {
+					margin-bottom: 0;
+				}
+				ul li:first-child .title {
+					font-size: 1.563em;
+				}
+				
+				.pagination-section {
+					margin: 2rem 0;
+				}
+				
+				.pagination {
+					gap: 6px;
+				}
+				
+				.pagination-numbers {
+					gap: 6px;
+				}
+				
+				.pagination a {
+					width: 36px;
+					height: 36px;
+					font-size: 13px;
+				}
+				
+				.pagination-ellipsis {
+					width: 36px;
+					height: 36px;
+					font-size: 13px;
+				}
+				
+				.pagination-info {
+					font-size: 13px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section>
+				<ul id="posts-list">
+					{
+						posts.map((post) => (
+							<li data-tags={JSON.stringify(post.data.tags || [])}>
+								<a href={`/posts/${post.id}/`}>
+									{post.data.heroImage ? (
+										<Image width={720} height={360} src={post.data.heroImage} alt="" />
+									) : (
+										<div class="placeholder-image">
+											<svg width="720" height="360" viewBox="0 0 720 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+												<rect width="720" height="360" fill="rgb(var(--gray-light))"/>
+												<path d="M360 180C360 180 340 160 320 180C300 200 280 180 260 200C240 220 220 200 200 220C180 240 160 220 140 240C120 260 100 240 80 260C60 280 40 260 20 280V340H700C700 340 680 320 660 300C640 280 620 300 600 280C580 260 560 280 540 260C520 240 500 260 480 240C460 220 440 240 420 220C400 200 380 220 360 200C340 180 360 180 360 180Z" fill="rgb(var(--gray))" fill-opacity="0.3"/>
+												<circle cx="360" cy="120" r="40" fill="rgb(var(--gray))" fill-opacity="0.2"/>
+												<text x="360" y="200" text-anchor="middle" fill="rgb(var(--gray))" font-size="24" font-family="Arial, sans-serif">No Image</text>
+											</svg>
+										</div>
+									)}
+									<h4 class="title">{post.data.title}</h4>
+									<p class="date">
+										<FormattedDate date={post.data.pubDate} />
+									</p>
+									{post.data.tags && post.data.tags.length > 0 && (
+										<div class="post-tags">
+											{post.data.tags.map((tag) => (
+												<span class="post-tag">{tag}</span>
+											))}
+										</div>
+									)}
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</section>
+			
+			<!-- Pagination -->
+			{totalPages > 1 && (
+				<section class="pagination-section" id="pagination-section">
+					<div class="pagination" id="pagination">
+						<a href="#" id="prev-btn" class="pagination-btn-hidden">‹</a>
+						<div class="pagination-numbers" id="pagination-numbers"></div>
+						<a href="#" id="next-btn" class="pagination-btn-hidden">›</a>
+					</div>
+					<div class="pagination-info">
+						Showing <span id="visible-count">{POSTS_PER_PAGE}</span> of {totalPosts} posts
+					</div>
+				</section>
+			)}
+			
+			<section class="tags-section">
+				<div class="filter-section">
+					<div class="tags-filter">
+						{allTags.slice(0, 7).map(({ tag, count }) => (
+							<a href="#" class="tag-filter" data-tag={tag}>
+								{tag}
+								<span class="tag-count">{count}</span>
+							</a>
+						))}
+					</div>
+					{allTags.length > 7 && (
+						<div class="tags-spoiler">
+							<button class="spoiler-toggle" id="spoiler-toggle">
+								Show more tags ({allTags.length - 7})
+							</button>
+							<div class="hidden-tags" id="hidden-tags" style="display: none;">
+								{allTags.slice(7).map(({ tag, count }) => (
+									<a href="#" class="tag-filter" data-tag={tag}>
+										{tag}
+										<span class="tag-count">{count}</span>
+									</a>
+								))}
+							</div>
+						</div>
+					)}
+				</div>
+			</section>
+		</main>
+		<Footer />
+		<script>
+			// Client-side pagination and tag filtering functionality
+			document.addEventListener('DOMContentLoaded', function() {
+				const POSTS_PER_PAGE = 11;
+				const tagFilters = document.querySelectorAll('.tag-filter');
+				const postsList = document.getElementById('posts-list');
+				const allPosts = Array.from(postsList.querySelectorAll('li'));
+				const totalPosts = allPosts.length;
+				const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+				
+				// Pagination elements
+				const prevBtn = document.getElementById('prev-btn');
+				const nextBtn = document.getElementById('next-btn');
+				const paginationNumbers = document.getElementById('pagination-numbers');
+				const visibleCount = document.getElementById('visible-count');
+				const paginationSection = document.getElementById('pagination-section');
+				
+				let currentPage = 1;
+				let selectedTag = null;
+				let filteredPosts = allPosts;
+				
+				// Initialize
+				updatePagination();
+				showCurrentPage();
+				
+				// Pagination event listeners
+				if (prevBtn) {
+					prevBtn.addEventListener('click', function(e) {
+						e.preventDefault();
+						if (currentPage > 1) {
+							currentPage--;
+							updatePagination();
+							showCurrentPage();
+							scrollToTop();
+						}
+					});
+				}
+				
+				if (nextBtn) {
+					nextBtn.addEventListener('click', function(e) {
+						e.preventDefault();
+						const maxPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+						if (currentPage < maxPages) {
+							currentPage++;
+							updatePagination();
+							showCurrentPage();
+							scrollToTop();
+						}
+					});
+				}
+
+				// Add click handlers for tag filters
+				tagFilters.forEach(filter => {
+					filter.addEventListener('click', function(e) {
+						e.preventDefault();
+						const tag = this.dataset.tag;
+						
+						// Toggle selection: if same tag clicked, deselect it
+						if (selectedTag === tag) {
+							// Deselect
+							selectedTag = null;
+							this.classList.remove('active');
+							filteredPosts = allPosts;
+							currentPage = 1;
+							
+							// Update URL
+							const newUrl = new URL(window.location);
+							newUrl.searchParams.delete('tag');
+							window.history.pushState({}, '', newUrl);
+						} else {
+							// Select new tag
+							selectedTag = tag;
+							
+							// Update active states
+							tagFilters.forEach(f => f.classList.remove('active'));
+							this.classList.add('active');
+							
+							// Filter posts
+							filteredPosts = allPosts.filter(post => {
+								const postTags = JSON.parse(post.dataset.tags || '[]');
+								return postTags.includes(tag);
+							});
+							currentPage = 1;
+							
+							// Update URL
+							const newUrl = new URL(window.location);
+							newUrl.searchParams.set('tag', tag);
+							window.history.pushState({}, '', newUrl);
+						}
+						
+						updatePagination();
+						showCurrentPage();
+					});
+				});
+
+				// Add spoiler toggle functionality
+				const spoilerToggle = document.getElementById('spoiler-toggle');
+				const hiddenTags = document.getElementById('hidden-tags');
+				
+				if (spoilerToggle && hiddenTags) {
+					spoilerToggle.addEventListener('click', function() {
+						const isHidden = hiddenTags.style.display === 'none';
+						hiddenTags.style.display = isHidden ? 'flex' : 'none';
+						const allTagsLength = document.querySelectorAll('.tag-filter').length;
+						this.textContent = isHidden ? 
+							`Hide tags (${allTagsLength - 7})` : 
+							`Show more tags (${allTagsLength - 7})`;
+					});
+				}
+
+				function updatePagination() {
+					const maxPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+					
+					// Show/hide pagination section
+					if (paginationSection) {
+						paginationSection.style.display = maxPages > 1 ? 'block' : 'none';
+					}
+					
+					// Update prev/next buttons with CSS classes
+					if (prevBtn) {
+						if (currentPage <= 1) {
+							prevBtn.classList.add('pagination-btn-hidden');
+						} else {
+							prevBtn.classList.remove('pagination-btn-hidden');
+						}
+					}
+					if (nextBtn) {
+						if (currentPage >= maxPages) {
+							nextBtn.classList.add('pagination-btn-hidden');
+						} else {
+							nextBtn.classList.remove('pagination-btn-hidden');
+						}
+					}
+					
+					// Generate page numbers
+					if (paginationNumbers) {
+						paginationNumbers.innerHTML = '';
+						for (let i = 1; i <= maxPages; i++) {
+							const shouldShow = 
+								i === 1 || 
+								i === maxPages || 
+								(i >= currentPage - 1 && i <= currentPage + 1);
+							
+							if (shouldShow) {
+								const pageBtn = document.createElement('a');
+								pageBtn.href = '#';
+								pageBtn.className = i === currentPage ? 'active' : '';
+								pageBtn.textContent = i;
+								
+								// Apply styles directly
+								pageBtn.style.cssText = `
+									display: flex !important;
+									align-items: center !important;
+									justify-content: center !important;
+									width: 40px !important;
+									height: 40px !important;
+									background: white !important;
+									border: 1px solid #ddd !important;
+									border-radius: 4px !important;
+									color: #333 !important;
+									text-decoration: none !important;
+									font-size: 14px !important;
+									font-weight: 500 !important;
+									transition: all 0.2s !important;
+									margin: 0 !important;
+									padding: 0 !important;
+									box-sizing: border-box !important;
+								`;
+								
+								if (i === currentPage) {
+									pageBtn.classList.add('active');
+									pageBtn.style.setProperty('background', 'white', 'important');
+									pageBtn.style.setProperty('border-color', 'black', 'important');
+									pageBtn.style.setProperty('color', 'black', 'important');
+								}
+								
+								pageBtn.addEventListener('click', function(e) {
+									e.preventDefault();
+									currentPage = i;
+									updatePagination();
+									showCurrentPage();
+									scrollToTop();
+								});
+								
+								pageBtn.addEventListener('mouseenter', function() {
+									if (!this.classList.contains('active')) {
+										this.style.borderColor = '#999 !important';
+										this.style.background = '#f5f5f5 !important';
+									}
+								});
+								
+								pageBtn.addEventListener('mouseleave', function() {
+									if (!this.classList.contains('active')) {
+										this.style.setProperty('border-color', '#ddd', 'important');
+										this.style.setProperty('background', 'white', 'important');
+									} else {
+										this.style.setProperty('background', 'white', 'important');
+										this.style.setProperty('border-color', 'black', 'important');
+										this.style.setProperty('color', 'black', 'important');
+									}
+								});
+								
+								paginationNumbers.appendChild(pageBtn);
+							} else if (
+								(i === currentPage - 2 && currentPage > 3) || 
+								(i === currentPage + 2 && currentPage < maxPages - 2)
+							) {
+								const ellipsis = document.createElement('span');
+								ellipsis.className = 'pagination-ellipsis';
+								ellipsis.textContent = '⋯';
+								paginationNumbers.appendChild(ellipsis);
+							}
+						}
+					}
+					
+					// Update pagination info
+					const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+					const endIndex = Math.min(startIndex + POSTS_PER_PAGE, filteredPosts.length);
+					
+					if (visibleCount) {
+						visibleCount.textContent = endIndex;
+					}
+				}
+
+				function showCurrentPage() {
+					// Hide all posts first
+					allPosts.forEach(post => {
+						post.style.display = 'none';
+					});
+					
+					// Calculate which posts to show
+					const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+					const endIndex = startIndex + POSTS_PER_PAGE;
+					const postsToShow = filteredPosts.slice(startIndex, endIndex);
+					
+					// Show the posts for current page
+					postsToShow.forEach(post => {
+						post.style.display = '';
+					});
+				}
+				
+				function scrollToTop() {
+					postsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
+			});
+		</script>
+	</body>
+</html>

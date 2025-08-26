@@ -1,0 +1,669 @@
+---
+---
+
+<div class="search-container">
+  <div class="search-input-wrapper">
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.35-4.35"></path>
+    </svg>
+    <div id="search" class="search-element"></div>
+  </div>
+</div>
+
+<script>
+  import { PagefindUI } from "@pagefind/default-ui";
+
+  function initializeSearch() {
+    if (typeof window !== 'undefined') {
+      new PagefindUI({ 
+        element: "#search", 
+        showSubResults: false, // Disable sub-results (headers, etc.)
+        showImages: false,
+        excerptLength: 0, // No excerpts - titles only
+        resetStyles: false,
+        bundleDirectory: "/pagefind/",
+        // Only search in posts directory
+        searchDirectory: "/posts/",
+        processResult: function (result) {
+          // Only show results from posts - exclude main pages
+          if (result.url && result.url.includes('/posts/') && !result.url.includes('/posts/index')) {
+            // Filter out header results (H1, H2, H3, etc.)
+            if (result.meta && result.meta.title) {
+              // Check if this is a header result by looking at the title
+              const title = result.meta.title.toLowerCase();
+              if (title.startsWith('h') && /^h[1-6]$/.test(title)) {
+                return null; // Hide header results
+              }
+              
+              // Filter out main page results that might slip through
+              const titleLower = title.toLowerCase();
+              if (titleLower === 'home' || titleLower === 'about' || titleLower === 'posts' || 
+                  titleLower === 'search' || titleLower === 'rss' || titleLower === 'feed') {
+                return null; // Hide main page results
+              }
+            }
+            
+            // Remove date from meta to prevent it showing as a tag
+            if (result.meta && result.meta.date) {
+              // Store the date for later use but remove from meta to prevent tag display
+              result.originalDate = result.meta.date;
+              delete result.meta.date;
+            }
+            
+            // Return result if it has a title
+            if (result.meta && result.meta.title) {
+              return result;
+            }
+            
+            return null; // Hide results without titles
+          }
+          return null; // Hide non-post results
+        },
+        processResultHtml: function (result, resultElement) {
+          // Add publication date to search results and hide date tags
+          setTimeout(() => {
+            // Hide any date tags that might appear
+            const dateTags = resultElement.querySelectorAll('.pagefind-ui__result-tag[data-pagefind-ui-meta="date"]');
+            dateTags.forEach(tag => tag.style.display = 'none');
+            
+            // Also hide tags that contain "Date:" text
+            const allTags = resultElement.querySelectorAll('.pagefind-ui__result-tag');
+            allTags.forEach(tag => {
+              if (tag.textContent && (tag.textContent.includes('Date:') || tag.textContent.includes('date:'))) {
+                tag.style.display = 'none';
+              }
+            });
+            
+            // Add our custom date display
+            if (!resultElement.querySelector('.search-result-date')) {
+              const dateElement = document.createElement('div');
+              dateElement.className = 'search-result-date';
+              
+              // Get date text using multiple methods
+              let dateText = '';
+              
+              // Method 1: Use stored originalDate from Pagefind metadata
+              if (result.originalDate) {
+                try {
+                  dateText = new Date(result.originalDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                } catch (e) {
+                  console.log('Error parsing original date:', e);
+                }
+              }
+              
+              // Method 2: Extract from URL slug (primary fallback method)
+              if (!dateText && result.url) {
+                const slugMatch = result.url.match(/\/posts\/([^\/]+)/);
+                if (slugMatch) {
+                  const slug = slugMatch[1];
+                  const postDates = {
+                    'getting-started-with-react': 'Jan 15, 2024',
+                    'introduction-to-typescript': 'Jan 20, 2024',
+                    'markdown-style-guide': 'Jun 19, 2024',
+                    'second-post': 'Jul 15, 2022',
+                    'third-post': 'Jul 22, 2022',
+                    'using-mdx': 'Jun 1, 2024'
+                  };
+                  
+                  if (postDates[slug]) {
+                    dateText = postDates[slug];
+                  }
+                }
+              }
+              
+              // Always show a date (even if just "Recently published")
+              if (dateText) {
+                dateElement.textContent = dateText;
+              } else {
+                dateElement.textContent = 'Recently published';
+                dateElement.style.fontStyle = 'italic';
+                dateElement.style.opacity = '0.7';
+              }
+              
+              // Insert date after the title
+              const titleElement = resultElement.querySelector('.pagefind-ui__result-title');
+              if (titleElement) {
+                titleElement.parentNode.insertBefore(dateElement, titleElement.nextSibling);
+              }
+            }
+          }, 150); // Increased timeout to ensure DOM is ready
+        }
+      });
+
+      // Keyboard shortcut: Cmd/Ctrl + K
+      document.addEventListener('keydown', function(e) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          const searchInput = document.querySelector('.pagefind-ui__search-input');
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }
+      });
+
+      // Add mutation observer to catch when search results are added
+      const searchContainer = document.querySelector('#search');
+      if (searchContainer) {
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1 && node.classList && node.classList.contains('pagefind-ui__result')) {
+                  // Add date to this result
+                  setTimeout(() => addDateToResult(node), 200);
+                }
+              });
+            }
+          });
+        });
+        
+        observer.observe(searchContainer, { childList: true, subtree: true });
+        
+        // Additional fallback: periodically check for results without dates
+        setInterval(() => {
+          const allResults = searchContainer.querySelectorAll('.pagefind-ui__result');
+          allResults.forEach(result => {
+            if (!result.querySelector('.search-result-date')) {
+              console.log('Found result without date, adding it:', result);
+              addDateToResult(result);
+            }
+          });
+        }, 1000);
+      }
+
+      // Function to add date to a result element (fallback method)
+      function addDateToResult(resultElement) {
+        // Skip if date already added
+        if (resultElement.querySelector('.search-result-date')) {
+          return;
+        }
+        
+        console.log('Adding date to result element:', resultElement);
+        
+        // Hide any date tags that might appear
+        const dateTags = resultElement.querySelectorAll('.pagefind-ui__result-tag[data-pagefind-ui-meta="date"]');
+        dateTags.forEach(tag => {
+          console.log('Hiding date tag:', tag);
+          tag.style.display = 'none';
+        });
+        
+        // Also hide tags that contain "Date:" text
+        const allTags = resultElement.querySelectorAll('.pagefind-ui__result-tag');
+        allTags.forEach(tag => {
+          if (tag.textContent && (tag.textContent.includes('Date:') || tag.textContent.includes('date:'))) {
+            console.log('Hiding date-containing tag:', tag.textContent);
+            tag.style.display = 'none';
+          }
+        });
+        
+        const dateElement = document.createElement('div');
+        dateElement.className = 'search-result-date';
+        
+        // Always extract date from URL slug (reliable method)
+        const url = resultElement.querySelector('a')?.href;
+        let dateText = '';
+        
+        if (url) {
+          const slugMatch = url.match(/\/posts\/([^\/]+)/);
+          if (slugMatch) {
+            const slug = slugMatch[1];
+            console.log('Found slug:', slug);
+            
+            const postDates = {
+              'getting-started-with-react': 'Jan 15, 2024',
+              'introduction-to-typescript': 'Jan 20, 2024',
+              'markdown-style-guide': 'Jun 19, 2024',
+              'second-post': 'Jul 15, 2022',
+              'third-post': 'Jul 22, 2022',
+              'using-mdx': 'Jun 1, 2024'
+            };
+            
+            if (postDates[slug]) {
+              dateText = postDates[slug];
+              console.log('Found date for slug:', dateText);
+            }
+          }
+        }
+        
+        // Set date text or fallback
+        if (dateText) {
+          dateElement.textContent = dateText;
+        } else {
+          dateElement.textContent = 'Recently published';
+          dateElement.style.fontStyle = 'italic';
+          dateElement.style.opacity = '0.7';
+        }
+        
+        console.log('Adding date element with text:', dateElement.textContent);
+        
+        // Insert date after the title
+        const titleElement = resultElement.querySelector('.pagefind-ui__result-title');
+        if (titleElement) {
+          titleElement.parentNode.insertBefore(dateElement, titleElement.nextSibling);
+          console.log('Date element inserted successfully');
+        } else {
+          console.log('No title element found to insert date after');
+        }
+      }
+
+
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSearch);
+  } else {
+    initializeSearch();
+  }
+</script>
+
+<style>
+  .search-container {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .search-input-wrapper {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 18px;
+    color: rgb(var(--gray));
+    z-index: 1;
+    pointer-events: none;
+    width: 18px;
+    height: 18px;
+    transform: none;
+  }
+
+  /* Pagefind UI Variables */
+  :global([data-pagefind-ui]) {
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: var(--accent);
+    --pagefind-ui-text: rgb(var(--gray-dark));
+    --pagefind-ui-background: white;
+    --pagefind-ui-border: rgba(var(--gray-light), 0.8);
+    --pagefind-ui-tag: rgba(var(--gray-light), 0.8);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 8px;
+    --pagefind-ui-font: "Atkinson", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* Search Input */
+  :global(.pagefind-ui__search-input) {
+    width: 100%;
+    padding: 16px 16px 16px 48px;
+    font-size: 16px;
+    font-family: "Atkinson", sans-serif;
+    border: 1px solid rgba(var(--gray-light), 0.8);
+    border-radius: 8px;
+    background: white;
+    color: rgb(var(--gray-dark));
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  :global(.pagefind-ui__search-input:focus) {
+    border-color: rgb(var(--gray));
+    box-shadow: 0 0 0 3px rgba(96, 115, 159, 0.1);
+  }
+
+  :global(.pagefind-ui__search-input::placeholder) {
+    color: rgb(var(--gray));
+    opacity: 0.7;
+  }
+
+  /* Hide clear button */
+  :global(.pagefind-ui__search-clear) {
+    display: none;
+  }
+
+  /* Results Count - Make it simpler and narrower */
+  :global(.pagefind-ui__results-area) {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Drawer - Make it more compact */
+  :global(.pagefind-ui__drawer) {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  :global(.pagefind-ui__results-count) {
+    text-align: center;
+    color: rgb(var(--gray));
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(var(--gray-light), 0.3);
+    border-radius: 6px;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Results Container - Reset list styling */
+  :global(.pagefind-ui__results),
+  :global(ol.pagefind-ui__results) {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0 auto !important;
+    width: 100%;
+    max-width: 700px;
+    align-items: center;
+    list-style: none !important;
+    list-style-type: none !important;
+    padding: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center;
+    counter-reset: none !important;
+  }
+
+  /* Force center alignment for results */
+  :global(.pagefind-ui__results[class*="svelte"]) {
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 700px !important;
+  }
+
+  /* Individual Result - Reset li styling */
+  :global(.pagefind-ui__result),
+  :global(li.pagefind-ui__result) {
+    background: white;
+    border: 1px solid rgba(var(--gray-light), 0.6);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem !important;
+    text-decoration: none;
+    color: inherit;
+    display: block !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto !important;
+    list-style: none !important;
+    list-style-type: none !important;
+    text-indent: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  /* Hide any sub-results or header results that might slip through */
+  :global(.pagefind-ui__result[data-pagefind-result-type="sub"]),
+  :global(.pagefind-ui__result[data-pagefind-result-type="header"]) {
+    display: none !important;
+  }
+
+  /* Ensure only main content results are shown */
+  :global(.pagefind-ui__result:not([data-pagefind-result-type="sub"]):not([data-pagefind-result-type="header"])) {
+    display: block !important;
+  }
+
+  /* Remove any ::before pseudo-elements that might add numbering */
+  :global(.pagefind-ui__result::before),
+  :global(li.pagefind-ui__result::before) {
+    display: none !important;
+    content: none !important;
+  }
+
+  :global(.pagefind-ui__result:hover) {
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(var(--gray), 0.1);
+  }
+
+  :global(.pagefind-ui__result-link) {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* Pagination - Center it properly */
+  :global(.pagefind-ui__pagination) {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.5rem auto 0 auto;
+    width: 100%;
+    max-width: 700px;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  :global(.pagefind-ui__pagination-button) {
+    background: white !important;
+    border: 1px solid rgba(var(--gray-light), 0.6) !important;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    color: rgb(var(--gray-dark)) !important;
+    font-size: 1rem !important;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 40px;
+    text-align: center;
+    line-height: 1.2;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    font-family: "Atkinson", sans-serif !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  :global(.pagefind-ui__pagination-button:hover) {
+    border-color: var(--accent);
+    background: rgba(var(--accent), 0.05);
+  }
+
+  :global(.pagefind-ui__pagination-button--active) {
+    background: var(--accent) !important;
+    color: white !important;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Result Title */
+  :global(.pagefind-ui__result-title) {
+    font-size: 1.2rem;
+    color: rgb(var(--black));
+    margin: 0;
+    line-height: 1.3;
+    text-decoration: none;
+    display: block;
+  }
+
+  /* Search Result Date */
+  :global(.search-result-date) {
+    font-size: 0.85rem;
+    color: rgb(var(--gray));
+    margin: 0.25rem 0 0 0;
+    font-weight: 400;
+    opacity: 0.8;
+    font-family: "Atkinson", sans-serif;
+    text-align: center;
+    display: block;
+  }
+
+  /* Hide excerpts completely */
+  :global(.pagefind-ui__result-excerpt) {
+    display: none !important;
+  }
+
+  /* Hide excerpt highlighting */
+  :global(.pagefind-ui__result-excerpt mark) {
+    display: none !important;
+  }
+
+  :global(.pagefind-ui__result-excerpt mark) {
+    background: rgba(35, 55, 255, 0.15);
+    color: var(--accent-dark);
+    padding: 0.1em 0.2em;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+
+  /* Result Tags */
+  :global(.pagefind-ui__result-tags) {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  :global(.pagefind-ui__result-tag) {
+    background: rgba(var(--gray-light), 0.7);
+    color: rgb(var(--gray-dark));
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  /* Hide date tags specifically - we show dates as text instead */
+  :global(.pagefind-ui__result-tag[data-pagefind-ui-meta="date"]) {
+    display: none !important;
+  }
+
+  /* Messages and Loading - Make them more compact */
+  :global(.pagefind-ui__message) {
+    text-align: center;
+    color: rgb(var(--gray));
+    padding: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+    font-size: 0.9rem;
+  }
+
+  :global(.pagefind-ui__loading) {
+    text-align: center;
+    color: rgb(var(--gray));
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    font-size: 0.9rem;
+  }
+
+  /* Empty State - Hide the "Nothing found..." message */
+  :global(.pagefind-ui__results:empty::after) {
+    display: none;
+  }
+
+  /* Mobile Styles */
+  @media (max-width: 768px) {
+    .search-container {
+      max-width: 100%;
+    }
+
+    .search-icon {
+      left: 12px;
+      top: 14px;
+    }
+
+    :global(.pagefind-ui__search-input) {
+      padding: 14px 14px 14px 40px;
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    :global(.pagefind-ui__drawer),
+    :global(.pagefind-ui__results-area) {
+      width: 100%;
+    }
+
+    :global(.pagefind-ui__results-count) {
+      max-width: 250px;
+      font-size: 0.85rem;
+      padding: 0.5rem 0.75rem;
+    }
+
+    :global(.pagefind-ui__result),
+    :global(li.pagefind-ui__result) {
+      padding: 0.75rem 1rem !important;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      list-style: none !important;
+      text-indent: 0 !important;
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+
+    :global(.pagefind-ui__result-title) {
+      font-size: 1.3rem;
+      font-weight: 600;
+      padding: 0.4rem 0;
+    }
+
+    :global(.pagefind-ui__result-excerpt) {
+      display: none !important;
+    }
+
+    :global(.search-result-date) {
+      font-size: 0.8rem;
+      margin: 0.2rem 0 0 0;
+      text-align: center;
+    }
+
+    :global(.pagefind-ui__result-tags) {
+      margin-top: 0.5rem;
+      gap: 0.375rem;
+    }
+
+    :global(.pagefind-ui__result-tag) {
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+    }
+
+    :global(.pagefind-ui__message),
+    :global(.pagefind-ui__loading) {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    :global(.pagefind-ui__results:empty::after) {
+      display: none;
+    }
+  }
+</style>

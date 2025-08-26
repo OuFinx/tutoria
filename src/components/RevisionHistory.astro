@@ -1,0 +1,163 @@
+---
+import { getFileGitHistory, getGitRemoteInfo, generateCommitUrl, formatRelativeDate, type GitCommit, type GitRemoteInfo } from '../utils/git-history';
+
+interface Props {
+  filePath: string;
+  showRevisionHistory?: boolean;
+}
+
+const { filePath, showRevisionHistory = true } = Astro.props;
+
+let commits: GitCommit[] = [];
+let remoteInfo: GitRemoteInfo | null = null;
+
+if (showRevisionHistory) {
+  try {
+    [commits, remoteInfo] = await Promise.all([
+      getFileGitHistory(filePath),
+      getGitRemoteInfo()
+    ]);
+  } catch (error) {
+    console.warn('Failed to load git history for revision display:', error);
+  }
+}
+---
+
+{showRevisionHistory && commits.length > 0 && (
+  <>
+    <hr style="border: none; border-top: 1px dashed rgb(var(--gray));" />
+    <div class="revision-history">
+      <h3 class="revision-title">
+      Changes History
+    </h3>
+    
+    <div class="revision-content">
+      {commits.map((commit, index) => {
+        const commitUrl = generateCommitUrl(remoteInfo, commit.fullHash);
+        
+        return (
+          <div class="git-line" key={commit.hash}>
+            {commitUrl ? (
+              <a 
+                href={commitUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="commit-hash"
+                title={`View commit ${commit.fullHash} on ${remoteInfo?.platform || 'git hosting'}`}
+              >
+                {commit.hash}
+              </a>
+            ) : (
+              <span class="commit-hash">{commit.hash}</span>
+            )}
+            <span class="commit-message">{commit.summary}</span>
+            <span class="commit-time">({formatRelativeDate(commit.date)})</span>
+          </div>
+        );
+      })}
+    </div>
+    </div>
+  </>
+)}
+
+<style>
+  .revision-history {
+    margin-top: 1rem;
+    padding: 0 1.5rem;
+    background: rgb(var(--gray-light));
+    border-radius: 8px;
+    border: 1px solid rgb(var(--gray-light));
+  }
+  
+  .revision-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgb(var(--gray-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .revision-icon {
+    opacity: 0.7;
+  }
+  
+  .revision-content {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .git-line {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  
+  .commit-hash {
+    color: rgb(var(--accent));
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 56px;
+    flex-shrink: 0;
+  }
+  
+  .commit-hash:hover {
+    color: rgb(var(--accent-dark, var(--accent)));
+    text-decoration: underline;
+    opacity: 0.8;
+  }
+  
+  .commit-message {
+    color: rgb(var(--gray-dark));
+    flex: 1;
+    margin-right: 8px;
+  }
+  
+  .commit-time {
+    color: rgb(var(--gray));
+    flex-shrink: 0;
+    font-style: italic;
+    font-size: 0.9em;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .revision-history {
+      margin-left: -1em;
+      margin-right: -1em;
+      border-radius: 0;
+      padding: 1rem;
+    }
+    
+    .revision-content {
+      font-size: 12px;
+    }
+    
+    .git-line {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    
+    .commit-hash {
+      min-width: auto;
+    }
+    
+    .commit-message {
+      margin-right: 0;
+    }
+  }
+  
+  /* Dark mode support if you have it */
+  @media (prefers-color-scheme: dark) {
+    .revision-history {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+</style>

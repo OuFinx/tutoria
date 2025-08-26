@@ -1,0 +1,63 @@
+---
+---
+
+<div class="header-search">
+  <button class="search-toggle" aria-label="Search" title="Search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.35-4.35"></path>
+    </svg>
+  </button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchToggle = document.querySelector('.search-toggle');
+    
+    if (searchToggle) {
+      searchToggle.addEventListener('click', function() {
+        // Navigate to search page
+        window.location.href = '/search';
+      });
+    }
+  });
+</script>
+
+<style>
+  .header-search {
+    display: flex;
+    align-items: center;
+  }
+
+  .search-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: rgb(var(--gray-dark));
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .search-toggle:hover {
+    color: var(--accent);
+  }
+
+  .search-toggle:focus {
+    outline: none;
+    color: var(--accent);
+  }
+
+  .search-toggle:active {
+    color: var(--accent);
+  }
+
+  @media (max-width: 480px) {
+    .header-search {
+      order: -1;
+      margin-right: 0.5rem;
+    }
+  }
+</style>

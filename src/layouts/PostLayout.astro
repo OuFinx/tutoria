@@ -1,0 +1,116 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+import Comments from '../components/Comments.astro';
+import RevisionHistory from '../components/RevisionHistory.astro';
+
+type Props = CollectionEntry<'posts'>['data'] & {
+	slug?: string;
+};
+
+const { title, description, author, pubDate, updatedDate, heroImage, showRevisionHistory = true, slug } = Astro.props;
+---
+
+<html lang="en">
+	<head>
+		<BaseHead title={title} description={description} />
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 100%;
+				margin: 0;
+			}
+			.hero-image {
+				width: 100%;
+			}
+			.hero-image img {
+				display: block;
+				margin: 0 auto;
+				border-radius: 12px;
+				box-shadow: var(--box-shadow);
+			}
+			.prose {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 1em;
+				color: rgb(var(--gray-dark));
+			}
+			.title {
+				margin-bottom: 1em;
+				padding: 1em 0;
+				text-align: center;
+				line-height: 1;
+			}
+			.prose .title h1 {
+				margin: 0 !important;
+			}
+			.date {
+				margin-bottom: 0.5em;
+				color: rgb(var(--gray));
+			}
+			.last-updated-on {
+				font-style: italic;
+			}
+			.author-date {
+				margin-bottom: 0.5em;
+				color: rgb(var(--gray));
+				font-size: .8em;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 0.5em;
+			}
+			.author-name {
+				font-weight: 400;
+				font-style: italic;
+				color: rgb(var(--gray));
+			}
+			.publish-date {
+				font-style: italic;
+				font-weight: 400;
+				color: rgb(var(--gray));
+			}
+		</style>
+	</head>
+
+	<body>
+		<Header />
+		<main>
+			<article>
+				<div class="hero-image">
+					{heroImage && <Image width={736} height={368} src={heroImage} alt="" />}
+				</div>
+				<div class="prose">
+					<div class="title">
+						<h1>{title}</h1>
+						<div class="author-date" data-pagefind-meta={`date:${pubDate.toISOString()}`}>
+							<span class="author-name">{author}</span> • <span class="publish-date"><FormattedDate date={pubDate} /></span>
+							{
+								updatedDate && (
+									<div class="last-updated-on">
+										Last updated on <FormattedDate date={updatedDate} />
+									</div>
+								)
+							}
+						</div>
+						<hr style="border: none; border-top: 1px dashed rgb(var(--gray));" />
+					</div>
+					<slot />
+					{showRevisionHistory && slug && (
+						<RevisionHistory 
+							filePath={`src/content/posts/${slug}.md`}
+							showRevisionHistory={showRevisionHistory}
+						/>
+					)}
+				</div>
+			</article>
+			<Comments />
+		</main>
+		<Footer />
+	</body>
+</html>

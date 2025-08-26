@@ -1,0 +1,35 @@
+---
+const today = new Date();
+---
+
+<footer>
+	&copy; {today.getFullYear()} <a href="https://github.com/OuFinx/tutoria" target="_blank" rel="noopener noreferrer">Tutoria</a>. All rights reserved.
+</footer>
+<style>
+	footer {
+		color: rgb(212, 212, 212);
+		text-align: center;
+	}
+	footer a {
+		color: rgb(var(--accent));
+		text-decoration: none;
+		transition: color 0.2s ease;
+	}
+	footer a:hover {
+		color: rgb(var(--accent-dark, var(--accent)));
+		text-decoration: underline;
+	}
+	.social-links {
+		display: flex;
+		justify-content: center;
+		gap: 1em;
+		margin-top: 1em;
+	}
+	.social-links a {
+		text-decoration: none;
+		color: rgb(var(--gray));
+	}
+	.social-links a:hover {
+		color: rgb(var(--gray-dark));
+	}
+</style>
