@@ -59,3 +59,35 @@ const { title, description, image } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 {image && <meta property="twitter:image" content={new URL(image.src, Astro.url)} />}
+
+<!-- Prevent Safari overscroll bounce -->
+<script>
+	// Prevent Safari overscroll bounce effect
+	document.addEventListener('DOMContentLoaded', function() {
+		// Prevent overscroll on the document
+		document.addEventListener('touchmove', function(e) {
+			if (e.touches.length > 1) {
+				e.preventDefault();
+			}
+		}, { passive: false });
+		
+		// Prevent overscroll when at the top or bottom
+		let startY = 0;
+		document.addEventListener('touchstart', function(e) {
+			startY = e.touches[0].clientY;
+		}, { passive: true });
+		
+		document.addEventListener('touchmove', function(e) {
+			const currentY = e.touches[0].clientY;
+			const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+			const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+			const clientHeight = document.documentElement.clientHeight || window.innerHeight;
+			
+			// If at the top and trying to scroll up, or at the bottom and trying to scroll down
+			if ((scrollTop <= 0 && currentY > startY) || 
+				(scrollTop + clientHeight >= scrollHeight && currentY < startY)) {
+				e.preventDefault();
+			}
+		}, { passive: false });
+	});
+</script>
