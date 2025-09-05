@@ -3,7 +3,7 @@
 ---
 
 <>
-  <hr class="comments-separator" />
+  <hr style="border: none; border-top: 1px dashed rgb(var(--gray));" />
   <div class="comments-section">
     <h3 class="comments-title">
       Comments
@@ -22,19 +22,9 @@
 </>
 
 <style>
-  .comments-separator {
-    border: none;
-    border-top: 1px dashed rgb(var(--gray));
-    width: 720px;
-    max-width: calc(100% - 2em);
-    margin: 1rem auto;
-  }
-
   .comments-section {
     width: 720px;
-    max-width: calc(100% - 2em);
     margin: 0 auto;
-    padding: 0 1.5rem;
     background: rgb(var(--gray-light));
     border-radius: 8px;
     border: 1px solid rgb(var(--gray-light));
@@ -58,10 +48,11 @@
   /* Responsive design */
   @media (max-width: 768px) {
     .comments-section {
+      width: 100%;
       margin-left: -1em;
       margin-right: -1em;
       border-radius: 0;
-      padding: 1rem;
+      padding-left: 1em;
     }
   }
   
