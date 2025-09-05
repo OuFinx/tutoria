@@ -94,13 +94,37 @@ export async function getFileGitHistory(filePath: string): Promise<GitCommit[]> 
 
 export async function getGitRemoteInfo(): Promise<GitRemoteInfo | null> {
     try {
-        const remoteUrl = execSync('git config --get remote.origin.url', {
-            encoding: 'utf8',
-            cwd: process.cwd()
-        }).trim();
+        // First try to get remote URL from git config
+        let remoteUrl: string | null = null;
 
+        try {
+            remoteUrl = execSync('git config --get remote.origin.url', {
+                encoding: 'utf8',
+                cwd: process.cwd()
+            }).trim();
+        } catch (gitError) {
+            // Git command failed, try environment variables as fallback
+            console.warn('Git command failed, trying environment variables:', gitError);
+        }
+
+        // If git command failed or returned empty, try environment variables
         if (!remoteUrl) {
-            return null;
+            // Try multiple Vercel environment variables
+            remoteUrl = process.env.GIT_REMOTE_URL ||
+                process.env.VERCEL_GIT_REPO_URL ||
+                (process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG
+                    ? `https://github.com/${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}.git`
+                    : null);
+
+            // Log available environment variables for debugging in production
+            console.log('Available git-related environment variables:', {
+                GIT_REMOTE_URL: process.env.GIT_REMOTE_URL,
+                VERCEL_GIT_REPO_URL: process.env.VERCEL_GIT_REPO_URL,
+                VERCEL_GIT_REPO_OWNER: process.env.VERCEL_GIT_REPO_OWNER,
+                VERCEL_GIT_REPO_SLUG: process.env.VERCEL_GIT_REPO_SLUG,
+                VERCEL_GIT_PROVIDER: process.env.VERCEL_GIT_PROVIDER,
+                resolvedRemoteUrl: remoteUrl
+            });
         }
 
         // Parse different Git hosting platforms
@@ -127,6 +151,12 @@ export async function getGitRemoteInfo(): Promise<GitRemoteInfo | null> {
                 baseUrl = `https://bitbucket.org/${match[1]}/${match[2]}`;
             }
         }
+
+        console.log('Generated git remote info:', {
+            url: remoteUrl,
+            platform,
+            baseUrl
+        });
 
         return {
             url: remoteUrl,
