@@ -127,12 +127,6 @@ export async function getGitRemoteInfo(): Promise<GitRemoteInfo | null> {
             });
         }
 
-        // Last resort: hardcoded fallback for this specific repository
-        if (!remoteUrl) {
-            console.warn('No git remote URL found, using hardcoded fallback');
-            remoteUrl = 'https://github.com/OuFinx/tutoria.git';
-        }
-
         // Parse different Git hosting platforms
         let platform: GitRemoteInfo['platform'] = 'other';
         let baseUrl = '';
