@@ -94,10 +94,23 @@ export async function getFileGitHistory(filePath: string): Promise<GitCommit[]> 
 
 export async function getGitRemoteInfo(): Promise<GitRemoteInfo | null> {
     try {
-        const remoteUrl = execSync('git config --get remote.origin.url', {
-            encoding: 'utf8',
-            cwd: process.cwd()
-        }).trim();
+        // First try to get remote URL from git config
+        let remoteUrl: string | null = null;
+
+        try {
+            remoteUrl = execSync('git config --get remote.origin.url', {
+                encoding: 'utf8',
+                cwd: process.cwd()
+            }).trim();
+        } catch (gitError) {
+            // Git command failed, try environment variables as fallback
+            console.warn('Git command failed, trying environment variables:', gitError);
+        }
+
+        // If git command failed or returned empty, try environment variables
+        if (!remoteUrl) {
+            remoteUrl = process.env.GIT_REMOTE_URL || process.env.VERCEL_GIT_REPO_URL;
+        }
 
         if (!remoteUrl) {
             return null;
