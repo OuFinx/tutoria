@@ -25,7 +25,7 @@ if (showRevisionHistory) {
 
 {showRevisionHistory && commits.length > 0 && (
   <>
-    <hr style="border: none; border-top: 1px dashed rgb(var(--gray));" />
+    <hr style="border: none; border-top: 1px dashed var(--theme-text-light);" />
     <div class="revision-history">
       <h3 class="revision-title">
       Changes History
@@ -62,22 +62,21 @@ if (showRevisionHistory) {
 
 <style>
   .revision-history {
-    margin-top: 1rem;
-    padding: 0 1.5rem;
-    background: rgb(var(--gray-light));
+    padding: 1rem;
+    background: transparent;
     border-radius: 8px;
-    border: 1px solid rgb(var(--gray-light));
   }
   
   .revision-title {
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: rgb(var(--gray-dark));
+    color: var(--theme-heading);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    transition: color 0.3s ease;
   }
   
   .revision-icon {
@@ -98,30 +97,32 @@ if (showRevisionHistory) {
   }
   
   .commit-hash {
-    color: rgb(var(--accent));
+    color: var(--accent);
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     min-width: 56px;
     flex-shrink: 0;
   }
   
   .commit-hash:hover {
-    color: rgb(var(--accent-dark, var(--accent)));
+    color: var(--accent-dark);
     text-decoration: underline;
     opacity: 0.8;
   }
   
   .commit-message {
-    color: rgb(var(--gray-dark));
+    color: var(--theme-text);
     flex: 1;
     margin-right: 8px;
+    transition: color 0.3s ease;
   }
   
   .commit-time {
-    color: rgb(var(--gray));
+    color: var(--theme-text-light);
     flex-shrink: 0;
     font-style: italic;
     font-size: 0.9em;
+    transition: color 0.3s ease;
   }
   
   /* Responsive design */
@@ -158,11 +159,4 @@ if (showRevisionHistory) {
     }
   }
   
-  /* Dark mode support if you have it */
-  @media (prefers-color-scheme: dark) {
-    .revision-history {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-  }
 </style>

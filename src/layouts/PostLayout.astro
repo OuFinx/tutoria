@@ -38,7 +38,8 @@ const { title, description, author, pubDate, updatedDate, heroImage, showRevisio
 				max-width: calc(100% - 2em);
 				margin: auto;
 				padding: 1em;
-				color: rgb(var(--gray-dark));
+				color: var(--theme-text);
+				transition: color 0.3s ease;
 			}
 			.title {
 				margin-bottom: 1em;
@@ -51,29 +52,33 @@ const { title, description, author, pubDate, updatedDate, heroImage, showRevisio
 			}
 			.date {
 				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+				color: var(--theme-text-light);
+				transition: color 0.3s ease;
 			}
 			.last-updated-on {
 				font-style: italic;
 			}
 			.author-date {
 				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+				color: var(--theme-text-light);
 				font-size: .8em;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				gap: 0.5em;
+				transition: color 0.3s ease;
 			}
 			.author-name {
 				font-weight: 400;
 				font-style: italic;
-				color: rgb(var(--gray));
+				color: var(--theme-text-light);
+				transition: color 0.3s ease;
 			}
 			.publish-date {
 				font-style: italic;
 				font-weight: 400;
-				color: rgb(var(--gray));
+				color: var(--theme-text-light);
+				transition: color 0.3s ease;
 			}
 		</style>
 	</head>
@@ -98,7 +103,7 @@ const { title, description, author, pubDate, updatedDate, heroImage, showRevisio
 								)
 							}
 						</div>
-						<hr style="border: none; border-top: 1px dashed rgb(var(--gray));" />
+						<hr style="border: none; border-top: 1px dashed var(--theme-text-light);" />
 					</div>
 					<slot />
 					{showRevisionHistory && slug && (

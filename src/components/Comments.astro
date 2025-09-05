@@ -3,21 +3,57 @@
 ---
 
 <>
-  <hr style="border: none; border-top: 1px dashed rgb(var(--gray));" />
+  <hr style="border: none; border-top: 1px dashed var(--theme-text-light);" />
   <div class="comments-section">
     <h3 class="comments-title">
       Comments
     </h3>
     
-    <div class="comments-content">
-      <script src="https://utteranc.es/client.js"
-          repo="OuFinx/tutoria"
-          issue-term="title"
-          theme="github-light"
-          crossorigin="anonymous"
-          async>
-      </script>
+    <div class="comments-content" id="utterances-container">
+      <!-- Utterances will be loaded here -->
     </div>
+    
+    <script>
+      function loadUtterances() {
+        const container = document.getElementById('utterances-container');
+        if (!container) return;
+        
+        // Clear existing utterances
+        container.innerHTML = '';
+        
+        // Check current theme
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const theme = isDark ? 'github-dark' : 'github-light';
+        
+        // Create utterances script
+        const script = document.createElement('script');
+        script.src = 'https://utteranc.es/client.js';
+        script.setAttribute('repo', 'OuFinx/tutoria');
+        script.setAttribute('issue-term', 'title');
+        script.setAttribute('theme', theme);
+        script.setAttribute('crossorigin', 'anonymous');
+        script.setAttribute('async', '');
+        
+        container.appendChild(script);
+      }
+      
+      // Load utterances when page loads
+      document.addEventListener('DOMContentLoaded', loadUtterances);
+      
+      // Reload utterances when theme changes
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+            loadUtterances();
+          }
+        });
+      });
+      
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+      });
+    </script>
   </div>
 </>
 
@@ -25,20 +61,21 @@
   .comments-section {
     width: 720px;
     margin: 0 auto;
-    background: rgb(var(--gray-light));
+    background: transparent;
     border-radius: 8px;
-    border: 1px solid rgb(var(--gray-light));
+    padding: 1em 0 0 0;
   }
   
   .comments-title {
     margin: 0 0 1rem 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: rgb(var(--gray-dark));
+    color: var(--theme-heading);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    transition: color 0.3s ease;
   }
   
   .comments-content {
@@ -56,11 +93,4 @@
     }
   }
   
-  /* Dark mode support */
-  @media (prefers-color-scheme: dark) {
-    .comments-section {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-  }
 </style>

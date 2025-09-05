@@ -49,7 +49,8 @@ const allTags = Object.entries(tagCounts)
 			}
 			.filter-title {
 				margin: 0 0 1rem 0;
-				color: rgb(var(--black));
+				color: var(--theme-heading);
+				transition: color 0.3s ease;
 			}
 			.tags-filter {
 				display: flex;
@@ -60,15 +61,16 @@ const allTags = Object.entries(tagCounts)
 				align-items: center;
 			}
 			.tag-filter {
-				color: rgb(var(--gray-dark));
+				color: var(--theme-text);
 				text-decoration: none;
 				font-size: 0.85em;
 				cursor: pointer;
 				padding: 0.4rem 0.8rem;
 				border-radius: 20px;
-				border: 1px dashed rgb(200, 200, 200);
+				border: 1px dashed var(--theme-border);
 				position: relative;
 				overflow: hidden;
+				transition: all 0.3s ease;
 			}
 			.tag-filter::before {
 				content: '';
@@ -82,21 +84,21 @@ const allTags = Object.entries(tagCounts)
 			.tag-filter:hover {
 				transform: translateY(-2px);
 				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-				border-color: rgb(var(--gray));
+				border-color: var(--theme-text-light);
 			}
 			.tag-filter:hover::before {
 				left: 100%;
 			}
 			.tag-filter.active {
-				color: rgb(var(--gray-dark));
+				color: var(--theme-heading);
 				border-color: var(--accent);
 				font-weight: 500;
 			}
 
 			.tag-count {
 				display: inline-block;
-				background: rgb(246, 246, 246);
-				color: #828282;
+				background: var(--theme-code-bg);
+				color: var(--theme-text-light);
 				border-radius: 50%;
 				width: 1.2em;
 				height: 1.2em;
@@ -105,16 +107,19 @@ const allTags = Object.entries(tagCounts)
 				text-align: center;
 				line-height: 1.2em;
 				vertical-align: text-bottom;
+				transition: all 0.3s ease;
 			}
 			.posts-count {
 				margin: 0;
-				color: rgb(var(--gray));
+				color: var(--theme-text-light);
 				font-size: 0.85em;
+				transition: color 0.3s ease;
 			}
 			.tags-section {
 				margin-top: 4rem;
 				padding-top: 3rem;
-				border-top: 1px solid rgb(var(--gray-light));
+				border-top: 1px solid var(--theme-border);
+				transition: border-color 0.3s ease;
 			}
 			.tags-spoiler {
 				text-align: center;
@@ -122,19 +127,19 @@ const allTags = Object.entries(tagCounts)
 			}
 			.spoiler-toggle {
 				background: transparent;
-				color: rgb(var(--gray));
+				color: var(--theme-text-light);
 				border: none;
 				padding: 0;
 				cursor: pointer;
 				font-size: 0.75em;
-				transition: all 0.2s ease;
+				transition: all 0.3s ease;
 				text-decoration: underline;
 				text-decoration-style: dotted;
 				text-underline-offset: 2px;
 			}
 			.spoiler-toggle:hover {
-				color: rgb(var(--gray-dark));
-				text-decoration-color: rgb(var(--gray-dark));
+				color: var(--theme-text);
+				text-decoration-color: var(--theme-text);
 			}
 			.hidden-tags {
 				display: flex;
@@ -179,16 +184,18 @@ const allTags = Object.entries(tagCounts)
 			}
 			.title {
 				margin: 0;
-				color: rgb(var(--black));
+				color: var(--theme-heading);
 				line-height: 1;
+				transition: color 0.3s ease;
 			}
 			.date {
 				margin: 0;
-				color: rgb(var(--gray));
+				color: var(--theme-text-light);
+				transition: color 0.3s ease;
 			}
 			ul li a:hover h4,
 			ul li a:hover .date {
-				color: rgb(var(--gray));
+				color: var(--theme-text-light);
 			}
 			ul a:hover img {
 				box-shadow: var(--box-shadow);
@@ -200,12 +207,13 @@ const allTags = Object.entries(tagCounts)
 				gap: 0.25rem;
 			}
 			.post-tag {
-				background: rgb(var(--accent));
-				color: white;
+				background: var(--accent);
+				color: var(--theme-bg);
 				padding: 0.2rem 0.5rem;
 				border-radius: 0.75rem;
 				font-size: 0.75rem;
 				text-decoration: none;
+				transition: all 0.3s ease;
 			}
 			.placeholder-image {
 				margin-bottom: 0.5rem;
@@ -246,14 +254,14 @@ const allTags = Object.entries(tagCounts)
 				justify-content: center !important;
 				width: 40px !important;
 				height: 40px !important;
-				background: white !important;
-				border: 1px solid #ddd !important;
+				background: var(--theme-bg) !important;
+				border: 1px solid var(--theme-border) !important;
 				border-radius: 4px !important;
-				color: #333 !important;
+				color: var(--theme-text) !important;
 				text-decoration: none !important;
 				font-size: 14px !important;
 				font-weight: 500 !important;
-				transition: all 0.2s !important;
+				transition: all 0.3s !important;
 				margin: 0 !important;
 				padding: 0 !important;
 				box-sizing: border-box !important;
@@ -261,16 +269,16 @@ const allTags = Object.entries(tagCounts)
 			
 			.pagination > a:hover,
 			.pagination-numbers > a:hover {
-				border-color: #999 !important;
-				background: #f5f5f5 !important;
-				color: #333 !important;
+				border-color: var(--theme-text-light) !important;
+				background: var(--theme-code-bg) !important;
+				color: var(--theme-heading) !important;
 			}
 			
 			.pagination > a.active,
 			.pagination-numbers > a.active {
-				background: white !important;
-				border-color: black !important;
-				color: black !important;
+				background: var(--theme-bg) !important;
+				border-color: var(--theme-heading) !important;
+				color: var(--theme-heading) !important;
 			}
 			
 			.pagination-ellipsis {
@@ -279,13 +287,15 @@ const allTags = Object.entries(tagCounts)
 				justify-content: center;
 				width: 40px;
 				height: 40px;
-				color: #999;
+				color: var(--theme-text-light);
 				font-size: 14px;
+				transition: color 0.3s ease;
 			}
 			
 			.pagination-info {
-				color: #666;
+				color: var(--theme-text-light);
 				font-size: 14px;
+				transition: color 0.3s ease;
 			}
 			
 			/* Hide buttons when not needed */
@@ -352,10 +362,10 @@ const allTags = Object.entries(tagCounts)
 									) : (
 										<div class="placeholder-image">
 											<svg width="720" height="360" viewBox="0 0 720 360" fill="none" xmlns="http://www.w3.org/2000/svg">
-												<rect width="720" height="360" fill="rgb(var(--gray-light))"/>
-												<path d="M360 180C360 180 340 160 320 180C300 200 280 180 260 200C240 220 220 200 200 220C180 240 160 220 140 240C120 260 100 240 80 260C60 280 40 260 20 280V340H700C700 340 680 320 660 300C640 280 620 300 600 280C580 260 560 280 540 260C520 240 500 260 480 240C460 220 440 240 420 220C400 200 380 220 360 200C340 180 360 180 360 180Z" fill="rgb(var(--gray))" fill-opacity="0.3"/>
-												<circle cx="360" cy="120" r="40" fill="rgb(var(--gray))" fill-opacity="0.2"/>
-												<text x="360" y="200" text-anchor="middle" fill="rgb(var(--gray))" font-size="24" font-family="Arial, sans-serif">No Image</text>
+												<rect width="720" height="360" fill="var(--theme-code-bg)"/>
+												<path d="M360 180C360 180 340 160 320 180C300 200 280 180 260 200C240 220 220 200 200 220C180 240 160 220 140 240C120 260 100 240 80 260C60 280 40 260 20 280V340H700C700 340 680 320 660 300C640 280 620 300 600 280C580 260 560 280 540 260C520 240 500 260 480 240C460 220 440 240 420 220C400 200 380 220 360 200C340 180 360 180 360 180Z" fill="var(--theme-text-light)" fill-opacity="0.3"/>
+												<circle cx="360" cy="120" r="40" fill="var(--theme-text-light)" fill-opacity="0.2"/>
+												<text x="360" y="200" text-anchor="middle" fill="var(--theme-text-light)" font-size="24" font-family="Arial, sans-serif">No Image</text>
 											</svg>
 										</div>
 									)}
@@ -576,14 +586,14 @@ const allTags = Object.entries(tagCounts)
 									justify-content: center !important;
 									width: 40px !important;
 									height: 40px !important;
-									background: white !important;
-									border: 1px solid #ddd !important;
+									background: var(--theme-bg) !important;
+									border: 1px solid var(--theme-border) !important;
 									border-radius: 4px !important;
-									color: #333 !important;
+									color: var(--theme-text) !important;
 									text-decoration: none !important;
 									font-size: 14px !important;
 									font-weight: 500 !important;
-									transition: all 0.2s !important;
+									transition: all 0.3s !important;
 									margin: 0 !important;
 									padding: 0 !important;
 									box-sizing: border-box !important;
@@ -591,9 +601,9 @@ const allTags = Object.entries(tagCounts)
 								
 								if (i === currentPage) {
 									pageBtn.classList.add('active');
-									pageBtn.style.setProperty('background', 'white', 'important');
-									pageBtn.style.setProperty('border-color', 'black', 'important');
-									pageBtn.style.setProperty('color', 'black', 'important');
+									pageBtn.style.setProperty('background', 'var(--theme-bg)', 'important');
+									pageBtn.style.setProperty('border-color', 'var(--theme-heading)', 'important');
+									pageBtn.style.setProperty('color', 'var(--theme-heading)', 'important');
 								}
 								
 								pageBtn.addEventListener('click', function(e) {
@@ -606,19 +616,19 @@ const allTags = Object.entries(tagCounts)
 								
 								pageBtn.addEventListener('mouseenter', function() {
 									if (!this.classList.contains('active')) {
-										this.style.borderColor = '#999 !important';
-										this.style.background = '#f5f5f5 !important';
+										this.style.setProperty('border-color', 'var(--theme-text-light)', 'important');
+										this.style.setProperty('background', 'var(--theme-code-bg)', 'important');
 									}
 								});
 								
 								pageBtn.addEventListener('mouseleave', function() {
 									if (!this.classList.contains('active')) {
-										this.style.setProperty('border-color', '#ddd', 'important');
-										this.style.setProperty('background', 'white', 'important');
+										this.style.setProperty('border-color', 'var(--theme-border)', 'important');
+										this.style.setProperty('background', 'var(--theme-bg)', 'important');
 									} else {
-										this.style.setProperty('background', 'white', 'important');
-										this.style.setProperty('border-color', 'black', 'important');
-										this.style.setProperty('color', 'black', 'important');
+										this.style.setProperty('background', 'var(--theme-bg)', 'important');
+										this.style.setProperty('border-color', 'var(--theme-heading)', 'important');
+										this.style.setProperty('color', 'var(--theme-heading)', 'important');
 									}
 								});
 								
