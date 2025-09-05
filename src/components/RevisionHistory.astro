@@ -130,7 +130,6 @@ if (showRevisionHistory) {
       margin-left: -1em;
       margin-right: -1em;
       border-radius: 0;
-      padding: 1rem;
     }
     
     .revision-content {
@@ -138,18 +137,24 @@ if (showRevisionHistory) {
     }
     
     .git-line {
-      flex-direction: column;
-      align-items: flex-start;
+      display: flex;
+      align-items: baseline;
       gap: 4px;
       margin-bottom: 12px;
     }
     
     .commit-hash {
       min-width: auto;
+      margin-bottom: 2px;
     }
     
     .commit-message {
       margin-right: 0;
+      margin-bottom: 2px;
+    }
+    
+    .commit-time {
+      font-size: 0.8em;
     }
   }
   
