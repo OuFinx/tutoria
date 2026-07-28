@@ -98,3 +98,6 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Superpowers docs
+docs/superpowers/

@@ -7,7 +7,7 @@ heroImage: '../../assets/mm2/mm2-logo.png'
 tags: ['Kafka', 'MirrorMaker']
 ---
 
-# Introduction
+## Introduction
 
 Hello, this is my first article on this site, and I want to start with Kafka MirrorMaker and a small life hack that helped me in one particular case.
 
@@ -53,7 +53,7 @@ MM2 will recreate the topic, but it will not replay messages from the beginning.
 
 ![MM2 Example](../../assets/mm2/mm2-after-replication.png)
 
-# Searching
+## Searching
 
 If you search the official MM2 docs for “reset offsets” you won’t find a clear answer, or maybe I can't find this 😁
 
@@ -90,7 +90,7 @@ Here’s what it looks like (_using KafkaIO to visualize_):
 
 ![MM2 Example](../../assets/mm2/mm2-offsets-example.png)
 
-# Resetting
+## Resetting
 
 There’s a good [blog post](https://javier.monton.info/blog/kafka-connect-mm2-offset-management) on this topic, but in my testing, their advice about using a null offset didn’t work.
 
@@ -123,7 +123,7 @@ P.S. This works when your topics are not compacted - just send `0` to all partit
 
 ![Offsets example](../../assets/mm2/mm2-offsets-5.png)
 
-# Conclusion
+## Conclusion
 
 Resetting offsets in MirrorMaker 2 isn’t as simple as deleting a topic.
 

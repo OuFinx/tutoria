@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tutoria.dev/sitemap-index.xml
