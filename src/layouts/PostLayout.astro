@@ -13,11 +13,24 @@ type Props = CollectionEntry<'posts'>['data'] & {
 };
 
 const { title, description, author, pubDate, updatedDate, heroImage, showRevisionHistory = true, slug } = Astro.props;
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: title,
+	description,
+	author: { '@type': 'Person', name: author },
+	datePublished: pubDate.toISOString(),
+	...(updatedDate && { dateModified: updatedDate.toISOString() }),
+	...(heroImage && { image: new URL(heroImage.src, Astro.site).href }),
+	mainEntityOfPage: new URL(Astro.url.pathname, Astro.site).href,
+};
 ---
 
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead title={title} description={description} image={heroImage} type="article" />
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 		<style>
 			main {
 				width: calc(100% - 2em);

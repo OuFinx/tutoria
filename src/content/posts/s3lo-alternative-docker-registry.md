@@ -7,7 +7,7 @@ heroImage: '../../assets/s3lo/s3lo-hero.png'
 tags: ['Kubernetes', 'AWS', 'Docker', 'S3', 'DevOps']
 ---
 
-# Introduction
+## Introduction
 
 It was an ordinary working day. I pushed a new deployment to EKS, went to grab a coffee, came back... and the pod was still in `ContainerCreating`. The image was around 2 GB, and ECR was taking its time. This happened again and again, every deploy.
 
@@ -17,7 +17,7 @@ I thought: why doesn't this exist as a proper tool?
 
 So I built one 🙂
 
-# The Problem with Traditional Registries
+## The Problem with Traditional Registries
 
 ECR, Docker Hub, GHCR. They all work fine for most cases. But when you're inside AWS pulling large images frequently, the friction adds up:
 
@@ -32,7 +32,7 @@ The speed difference comes from S3's internal network inside AWS. EC2 instances 
 
 And honestly, the simplicity is underrated. No registry to provision, no lifecycle policies to configure, no separate IAM setup beyond a basic bucket policy. It's just S3.
 
-# Introducing s3lo
+## Introducing s3lo
 
 **s3lo** is a CLI tool written in Go that lets you push and pull Docker images to any S3-compatible storage: AWS S3, Google Cloud Storage, Azure Blob, MinIO, Cloudflare R2, Ceph, or even local disk.
 
@@ -44,9 +44,9 @@ It stores images using the [OCI Image Layout](https://github.com/opencontainers/
 
 And because I was building this for real production use, I also added **image signing**, compatible with cosign and AWS KMS. This matters when you have security audits: you can prove that what's running in your cluster is exactly what was pushed from your CI pipeline.
 
-# Practical Guide
+## Practical Guide
 
-## Install
+### Install
 
 ```bash
 # Homebrew (macOS/Linux)
@@ -56,7 +56,7 @@ brew install OuFinx/tap/s3lo
 curl -sSL https://raw.githubusercontent.com/OuFinx/s3lo/main/install.sh | sh
 ```
 
-## Push & Pull
+### Push & Pull
 
 ```bash
 # Push a local image to S3
@@ -87,7 +87,7 @@ AZURE_STORAGE_ACCOUNT=mystorageaccount s3lo push myapp:v1.0 az://my-container/my
 s3lo push myapp:v1.0 s3://my-bucket/myapp:v1.0 --endpoint http://localhost:9000
 ```
 
-## Mirror from Any Registry
+### Mirror from Any Registry
 
 One thing I use constantly: pulling images directly from Docker Hub, ECR, or GHCR into S3 without touching the local Docker daemon. It's called `copy`, and it saves a lot of manual steps in CI pipelines.
 
@@ -110,7 +110,7 @@ s3lo copy docker.io/library/alpine:latest s3://my-bucket/alpine:latest --platfor
 
 This was a big quality-of-life improvement over pulling locally and re-pushing. No daemon involvement, no temporary disk usage.
 
-## See What You're Actually Storing
+### See What You're Actually Storing
 
 After a few months of pushing images, I wanted to understand what was taking up space and whether deduplication was actually working. Two commands do this well.
 
@@ -142,7 +142,7 @@ s3lo stats s3://my-bucket/
 
 That "67% saved" number is because all your images share the same base layers (Ubuntu, Alpine, Node.js runtime, etc.), and s3lo only stores each unique layer once.
 
-## Keep Your Bucket Clean
+### Keep Your Bucket Clean
 
 Without lifecycle rules, buckets accumulate old tags forever. I added a way to configure this per image or bucket-wide:
 
@@ -159,7 +159,7 @@ s3lo clean s3://my-bucket/ --confirm
 
 The clean command prunes old tags based on lifecycle rules, then runs garbage collection to remove unreferenced blobs. Running this regularly is what keeps the deduplication savings meaningful.
 
-## Browse Interactively
+### Browse Interactively
 
 Checking stats and inspecting images from the command line works, but sometimes you just want to browse. I recently added a TUI - a full interactive terminal UI:
 
@@ -171,7 +171,7 @@ It shows all images with their sizes and tag counts. Navigate into an image to s
 
 Nothing fancy, but it makes exploring a bucket much more comfortable than running `list` and `inspect` in loops.
 
-## Image Signing
+### Image Signing
 
 This was one of the features I'm most happy about adding. If you need to meet compliance requirements or just want to know that images haven't been tampered with:
 
@@ -192,7 +192,7 @@ COSIGN_PASSWORD=secret s3lo sign s3://my-bucket/myapp:v1.0 --key cosign.key
 s3lo verify s3://my-bucket/myapp:v1.0 --key cosign.pub
 ```
 
-## CI Integration
+### CI Integration
 
 In practice, most pushes happen from CI, not laptops. Here's a minimal GitHub Actions job:
 
@@ -212,7 +212,7 @@ If you want to mirror from Docker Hub or ECR on every release, `copy` fits here 
 - run: ./s3lo copy nginx:${{ env.NGINX_VERSION }} s3://my-bucket/nginx:${{ env.NGINX_VERSION }}
 ```
 
-## Kubernetes Integration
+### Kubernetes Integration
 
 Pushing images and pulling them manually is useful, but the real win is using them directly in Kubernetes, without changing how containerd works or patching anything.
 
@@ -244,7 +244,7 @@ containers:
 
 For IAM, you associate a role with the `s3lo-proxy` service account using EKS Pod Identity. Standard stuff, nothing exotic.
 
-## Serve Images Without the Operator
+### Serve Images Without the Operator
 
 The operator is the right answer for production Kubernetes, but sometimes you just need a quick OCI-compatible endpoint - for local development, for a single node, or for testing before installing the operator.
 
@@ -260,7 +260,7 @@ docker pull localhost:5000/myapp:v1.0
 
 For S3 backends, blobs are served via presigned redirect - the server just returns a signed URL and the client downloads directly from S3. No data goes through the server itself.
 
-## No Cloud Account? Try Local Storage
+### No Cloud Account? Try Local Storage
 
 I also built a `local://` backend for development and testing. It uses the same OCI layout as S3, so everything works identically - no cloud account, no credentials:
 
@@ -276,7 +276,7 @@ s3lo tui local://./local-s3/
 
 This is how I test most features during development. It's also useful for air-gapped environments or for trying s3lo before committing to a bucket.
 
-# Conclusion
+## Conclusion
 
 What started as frustration over slow image pulls grew into something more complete than I expected: push/pull to any object storage, mirroring from any registry, image signing for audit trails, lifecycle management, a TUI for browsing, and native Kubernetes integration without patching anything.
 
