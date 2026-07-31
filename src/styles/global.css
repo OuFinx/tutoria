@@ -26,6 +26,11 @@
 	--theme-code-bg: rgb(var(--gray-light));
 	--theme-link: rgb(43, 42, 42);
 	--theme-link-hover: rgb(60, 59, 59);
+	--theme-table-border: rgba(0, 0, 0, 0.18);
+	--theme-table-head: rgba(var(--gray-light), 0.7);
+	--theme-table-stripe: rgba(var(--gray-light), 0.3);
+	/* one knob for header, article body and comments so they stay aligned */
+	--content-width: 880px;
 }
 
 /* Dark theme */
@@ -44,6 +49,9 @@
 	--theme-code-bg: rgb(45, 55, 72);
 	--theme-link: rgb(203, 213, 225);
 	--theme-link-hover: rgb(255, 255, 255);
+	--theme-table-border: rgba(255, 255, 255, 0.18);
+	--theme-table-head: rgba(255, 255, 255, 0.07);
+	--theme-table-stripe: rgba(255, 255, 255, 0.035);
 	--box-shadow:
 		0 2px 6px rgba(0, 0, 0, 25%), 0 8px 24px rgba(0, 0, 0, 33%), 0 16px 32px rgba(0, 0, 0, 33%);
 }
@@ -94,7 +102,7 @@ body {
 }
 
 main {
-	width: 720px;
+	width: var(--content-width);
 	max-width: calc(100% - 2em);
 	margin: auto;
 	padding: 1em 1em;
@@ -165,6 +173,114 @@ input {
 
 table {
 	width: 100%;
+	/* display:block so a wide table scrolls itself instead of clipping on mobile */
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+	margin: 1.5em 0;
+	font-size: 0.95em;
+}
+
+th,
+td {
+	border: 1px solid var(--theme-table-border);
+	padding: 0.6em 0.9em;
+	text-align: left;
+	vertical-align: top;
+}
+
+thead th {
+	background-color: var(--theme-table-head);
+	color: var(--theme-heading);
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+tbody tr:nth-child(even) {
+	background-color: var(--theme-table-stripe);
+}
+
+/* keep config names intact and copy-pasteable; the table scrolls instead */
+th code,
+td code {
+	white-space: nowrap;
+}
+
+/* stepped flow diagram: real text so it wraps and stays selectable on mobile */
+.flow {
+	margin: 2em 0;
+}
+
+.flow-step {
+	display: flex;
+	gap: 0.9em;
+	align-items: flex-start;
+	border: 1px solid var(--theme-table-border);
+	border-radius: 10px;
+	padding: 1em 1.1em;
+	background-color: var(--theme-table-stripe);
+}
+
+.flow-num {
+	flex: 0 0 auto;
+	width: 1.9em;
+	height: 1.9em;
+	border-radius: 50%;
+	background-color: var(--accent);
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.85em;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.flow-title {
+	color: var(--theme-heading);
+	font-weight: 700;
+	font-size: 0.95em;
+	margin-bottom: 0.5em;
+}
+
+.flow-body p {
+	margin: 0 0 0.4em 0;
+	font-size: 0.85em;
+	line-height: 1.6;
+}
+
+.flow-body p:last-child {
+	margin-bottom: 0;
+}
+
+.flow-key {
+	display: inline-block;
+	min-width: 5.5em;
+	color: var(--theme-text-light);
+	font-style: italic;
+}
+
+.flow-to {
+	color: var(--accent);
+	font-weight: 700;
+}
+
+.flow-note {
+	color: var(--theme-text-light);
+}
+
+.flow-arrow {
+	height: 1.6em;
+	margin: 0 0 0 2.05em;
+	border-left: 2px solid var(--theme-table-border);
+}
+
+@media (max-width: 520px) {
+	.flow-key {
+		display: block;
+		min-width: 0;
+	}
 }
 
 img {
@@ -185,6 +301,8 @@ pre {
 	padding: 1.5em;
 	border-radius: 8px;
 	font-size: 0.75em;
+	max-width: 100%;
+	overflow-x: auto;
 }
 
 pre>code {
